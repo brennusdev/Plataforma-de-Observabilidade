@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Observability Platform</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="logo">⌁</div>
+            <div>
+                <strong>OBSERVABILITY</strong>
+                <span>PLATFORM</span>
+            </div>
+        </div>
+
+        <nav>
+            <a class="active">Overview</a>
+            <a>Dashboards</a>
+            <a>Services</a>
+            <a>Metrics</a>
+            <a>Logs</a>
+            <a>Traces</a>
+            <a>Alerts</a>
+            <a>Reports</a>
+            <a>Settings</a>
+
+            <small>INFRASTRUCTURE</small>
+            <a>Hosts</a>
+            <a>Containers</a>
+            <a>Databases</a>
+            <a>Networks</a>
+
+            <small>COLLECTORS</small>
+            <a>Collectors</a>
+            <a>Integrations</a>
+            <a>Endpoints</a>
+        </nav>
+
+        <div class="version">v1.0.0</div>
+    </aside>
+
+    <main>
+        <header>
+            <div class="search">⌕ &nbsp; Search anything... <kbd>Ctrl + K</kbd></div>
+            <div class="header-actions">
+                <button>Last 24 hours</button>
+                <button>↻ 30s</button>
+                <span>🔔</span>
+                <strong>Brenno Willian</strong>
+            </div>
+        </header>
+
+        <section class="content">
+            <div class="page-title">
+                <div>
+                    <h1>Overview</h1>
+                    <p>System health and performance summary</p>
+                </div>
+                <span id="connection" class="status-dot">● Live</span>
+            </div>
+
+            <section class="cards">
+                <article class="card">
+                    <span>CPU Usage</span>
+                    <strong id="cpu">--%</strong>
+                    <small>Current host usage</small>
+                </article>
+                <article class="card">
+                    <span>Memory Usage</span>
+                    <strong id="memory">--%</strong>
+                    <small>Current host usage</small>
+                </article>
+                <article class="card">
+                    <span>Disk Usage</span>
+                    <strong id="disk">--%</strong>
+                    <small>Root filesystem</small>
+                </article>
+                <article class="card">
+                    <span>Uptime</span>
+                    <strong id="uptime">--</strong>
+                    <small>Host uptime</small>
+                </article>
+                <article class="card">
+                    <span>System Health</span>
+                    <strong id="health">--</strong>
+                    <small>Calculated status</small>
+                </article>
+            </section>
+
+            <section class="grid">
+                <article class="panel large">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Resource Usage</h2>
+                            <p>Real-time host metrics</p>
+                        </div>
+                        <span>LIVE</span>
+                    </div>
+                    <canvas id="metricsChart"></canvas>
+                </article>
+
+                <article class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Services Status</h2>
+                            <p>Current service state</p>
+                        </div>
+                    </div>
+                    <div id="services"></div>
+                </article>
+
+                <article class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Active Alerts</h2>
+                            <p>Latest detected conditions</p>
+                        </div>
+                    </div>
+                    <div id="alerts"></div>
+                </article>
+
+                <article class="panel large">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Metric History</h2>
+                            <p>Last collected snapshots</p>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>CPU</th>
+                                    <th>Memory</th>
+                                    <th>Disk</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history"></tbody>
+                        </table>
+                    </div>
+                </article>
+            </section>
+        </section>
+
+        <footer>
+            <span>Observability Platform v1.0.0</span>
+            <span>All systems operational ●</span>
+        </footer>
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
