@@ -16,6 +16,7 @@ async def request_logging_middleware(
 
     try:
         response = await call_next(request)
+
         status_code = response.status_code
 
         return response
@@ -27,8 +28,10 @@ async def request_logging_middleware(
 
         if status_code >= 500:
             level = "ERROR"
+
         elif status_code >= 400:
             level = "WARNING"
+
         else:
             level = "INFO"
 
@@ -40,6 +43,7 @@ async def request_logging_middleware(
 
         try:
             with SessionLocal() as db:
+
                 create_log(
                     db,
                     level=level,
@@ -47,10 +51,15 @@ async def request_logging_middleware(
                     method=request.method,
                     path=request.url.path,
                     status_code=status_code,
-                    duration_ms=round(duration_ms, 2),
+                    duration_ms=round(
+                        duration_ms,
+                        2,
+                    ),
                     message=message,
                 )
+
         except Exception as exc:
+
             print(
                 f"[logging] failed to persist log: {exc}"
             )
