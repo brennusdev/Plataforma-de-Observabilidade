@@ -10,7 +10,7 @@ from app.api.log_routes import router as log_router
 from app.api.routes import router
 from app.core.config import settings
 from app.core.database import Base, SessionLocal, engine
-from .middleware.request_logging import request_logging_middleware
+from app.middleware.request_logging import request_logging_middleware
 from app.models.log import LogEntry
 from app.models.metric import Alert, MetricSnapshot, ServiceStatus
 from app.services.collector_service import save_snapshot
