@@ -1,85 +1,82 @@
-async function loadAlertEngine() {
-
-    const container =
-        document.getElementById(
-            "alertEngine"
-        );
-
-    if (!container) {
-        return;
-    }
+async function loadApplicationMetrics() {
 
     try {
 
-        const alerts =
+        const metrics =
             await fetchJSON(
-                "/api/alerts/active"
+                "/api/application/metrics?minutes=60"
             );
 
-        if (!alerts.length) {
+        const requestCount =
+            document.getElementById(
+                "requestCount"
+            );
 
-            container.innerHTML = `
-                <div class="alert">
-                    <span>
-                        ✓ System operating normally
-                    </span>
-                </div>
-            `;
+        const errorRate =
+            document.getElementById(
+                "errorRate"
+            );
 
-            return;
+        const avgLatency =
+            document.getElementById(
+                "avgLatency"
+            );
+
+        const p95Latency =
+            document.getElementById(
+                "p95Latency"
+            );
+
+        const p99Latency =
+            document.getElementById(
+                "p99Latency"
+            );
+
+
+        if (requestCount) {
+
+            requestCount.textContent =
+                metrics.request_count;
+
         }
 
-        container.innerHTML =
-            alerts.map(
-                alert => `
-                    <div class="alert">
 
-                        <div>
+        if (errorRate) {
 
-                            <div class="alert-title">
-                                ${alert.title}
-                            </div>
+            errorRate.textContent =
+                `${metrics.error_rate}%`;
 
-                            <div class="alert-meta">
-                                ${alert.metric}
-                                =
-                                ${alert.value.toFixed(1)}
-                                /
-                                threshold:
-                                ${alert.threshold}
-                            </div>
+        }
 
-                        </div>
 
-                        <span class="badge ${
-                            alert.severity === "critical"
-                                ? "critical"
-                                : "warning"
-                        }">
-                            ${alert.severity}
-                        </span>
+        if (avgLatency) {
 
-                    </div>
-                `
-            ).join("");
+            avgLatency.textContent =
+                `${metrics.average_latency_ms} ms`;
+
+        }
+
+
+        if (p95Latency) {
+
+            p95Latency.textContent =
+                `${metrics.p95_latency_ms} ms`;
+
+        }
+
+
+        if (p99Latency) {
+
+            p99Latency.textContent =
+                `${metrics.p99_latency_ms} ms`;
+
+        }
 
     } catch (error) {
 
         console.error(
-            "Alert Engine error:",
+            "Application metrics error:",
             error
         );
-
-        container.innerHTML = `
-            <div class="alert">
-                Unable to load alert engine.
-            </div>
-        `;
     }
-}
-
-async function refresh() {
-
-    await loadAlertEngine();
-
 }
