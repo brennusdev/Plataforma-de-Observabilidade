@@ -4,6 +4,10 @@ from app.schemas.alerts import (
     AlertRuleResponse,
 )
 
+from app.schemas.application_metrics import (
+    ApplicationMetricsResponse,
+)
+
 from app.schemas.logs import (
     LogResponse,
 )
@@ -20,6 +24,7 @@ __all__ = [
     "AlertResponse",
     "AlertRuleCreate",
     "AlertRuleResponse",
+    "ApplicationMetricsResponse",
     "LogResponse",
     "MetricResponse",
     "ServiceResponse",
