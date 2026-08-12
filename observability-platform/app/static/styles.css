@@ -222,6 +222,23 @@ h1 {
     grid-template-columns: 1.7fr 1fr;
     gap: 14px;
 }
+.alert-engine {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.alert-critical {
+    border-left: 3px solid var(--red);
+}
+
+.alert-warning {
+    border-left: 3px solid var(--yellow);
+}
+
+.alert-resolved {
+    border-left: 3px solid var(--green);
+}
 
 .panel {
     padding: 17px;
