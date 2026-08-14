@@ -1,35 +1,91 @@
 services:
+
   api:
+
     build: .
-    container_name: observability_api
+
+    container_name: observability-api
+
     ports:
+
       - "8000:8000"
+
     environment:
-      DATABASE_URL: postgresql+psycopg://observability:observability@db:5432/observability
-      APP_NAME: Observability Platform
-      COLLECT_INTERVAL_SECONDS: 15
+
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/observability
+
     depends_on:
-      db:
-        condition: service_healthy
-    restart: unless-stopped
+
+      - db
+
+      - prometheus
+
 
   db:
-    image: postgres:17
-    container_name: observability_db
+
+    image: postgres:16
+
+    container_name: observability-db
+
     environment:
+
+      POSTGRES_USER: postgres
+
+      POSTGRES_PASSWORD: postgres
+
       POSTGRES_DB: observability
-      POSTGRES_USER: observability
-      POSTGRES_PASSWORD: observability
+
     ports:
+
       - "5432:5432"
+
     volumes:
+
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U observability -d observability"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    restart: unless-stopped
+
+
+  prometheus:
+
+    image: prom/prometheus:latest
+
+    container_name: observability-prometheus
+
+    ports:
+
+      - "9090:9090"
+
+    volumes:
+
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+      - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml
+
+    command:
+
+      - "--config.file=/etc/prometheus/prometheus.yml"
+
+
+  grafana:
+
+    image: grafana/grafana:latest
+
+    container_name: observability-grafana
+
+    ports:
+
+      - "3000:3000"
+
+    depends_on:
+
+      - prometheus
+
+    volumes:
+
+      - grafana_data:/var/lib/grafana
+
 
 volumes:
+
   postgres_data:
+
+  grafana_data:
