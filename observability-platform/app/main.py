@@ -15,6 +15,10 @@ from fastapi.staticfiles import (
     StaticFiles,
 )
 
+from prometheus_client import (
+    make_asgi_app,
+)
+
 from sqlalchemy import select
 
 from app.api.alert_routes import (
@@ -41,6 +45,14 @@ from app.core.database import (
     engine,
 )
 
+from app.middleware.logging import (
+    request_logging_middleware,
+)
+
+from app.middleware.metrics import (
+    metrics_middleware,
+)
+
 from app.models.alert import (
     AlertRule,
 )
@@ -49,20 +61,22 @@ from app.models.metric import (
     ServiceStatus,
 )
 
+from app.observability.collector import (
+    collect_system_metrics,
+)
+
 from app.services.collector_service import (
     save_snapshot,
 )
 
 
-# Note: metrics middleware imports removed - module not found
-# Uncomment middleware registration below once middleware is implemented
-
-
-async def collector_loop():
+async def observability_loop():
 
     while True:
 
         try:
+
+            collect_system_metrics()
 
             with SessionLocal() as db:
 
@@ -73,7 +87,8 @@ async def collector_loop():
         except Exception as exc:
 
             print(
-                f"[collector] error: {exc}"
+                "[observability] "
+                f"error: {exc}"
             )
 
         await asyncio.sleep(
@@ -115,6 +130,18 @@ async def lifespan(
                         status="operational",
                         uptime_percent=99.90,
                     ),
+
+                    ServiceStatus(
+                        service_name="prometheus",
+                        status="operational",
+                        uptime_percent=99.99,
+                    ),
+
+                    ServiceStatus(
+                        service_name="grafana",
+                        status="operational",
+                        uptime_percent=99.99,
+                    ),
                 ]
             )
 
@@ -155,7 +182,7 @@ async def lifespan(
             db.commit()
 
     task = asyncio.create_task(
-        collector_loop()
+        observability_loop()
     )
 
     try:
@@ -175,43 +202,48 @@ async def lifespan(
 
 app = FastAPI(
     title=settings.app_name,
-    version="4.0.0",
+    version="5.0.0",
     lifespan=lifespan,
 )
 
 
-# Middleware registrations commented out - functions not yet implemented
-# app.middleware(
-#     "http"
-# )(
-#     request_logging_middleware
-# )
-#
-#
-# app.middleware(
-#     "http"
-# )(
-#     metrics_middleware
-# )
+app.middleware(
+    "http"
+)(
+    request_logging_middleware
+)
+
+
+app.middleware(
+    "http"
+)(
+    metrics_middleware
+)
 
 
 app.include_router(
     router
 )
 
-
 app.include_router(
     log_router
 )
-
 
 app.include_router(
     alert_router
 )
 
-
 app.include_router(
     application_metrics_router
+)
+
+
+metrics_app = make_asgi_app()
+
+
+app.mount(
+    "/metrics",
+    metrics_app,
 )
 
 
@@ -230,7 +262,7 @@ def health():
     return {
         "status": "operational",
         "service": settings.app_name,
-        "version": "4.0.0",
+        "version": "5.0.0",
     }
 
 
