@@ -3,6 +3,11 @@ import time
 from fastapi import Request
 
 from app.core.database import SessionLocal
+from app.observability.prometheus import (
+    REQUEST_COUNT,
+    REQUEST_ERRORS,
+    REQUEST_LATENCY,
+)
 from app.services.application_metric_service import (
     save_request_metric,
 )
@@ -31,10 +36,43 @@ async def metrics_middleware(
 
     finally:
 
-        duration_ms = (
+        duration_seconds = (
             time.perf_counter()
             - start_time
-        ) * 1000
+        )
+
+        duration_ms = (
+            duration_seconds * 1000
+        )
+
+        path = request.url.path
+
+        method = request.method
+
+        REQUEST_COUNT.labels(
+            method=method,
+            path=path,
+            status_code=str(
+                status_code
+            ),
+        ).inc()
+
+        REQUEST_LATENCY.labels(
+            method=method,
+            path=path,
+        ).observe(
+            duration_seconds
+        )
+
+        if status_code >= 400:
+
+            REQUEST_ERRORS.labels(
+                method=method,
+                path=path,
+                status_code=str(
+                    status_code
+                ),
+            ).inc()
 
         try:
 
@@ -42,8 +80,8 @@ async def metrics_middleware(
 
                 save_request_metric(
                     db,
-                    method=request.method,
-                    path=request.url.path,
+                    method=method,
+                    path=path,
                     status_code=status_code,
                     duration_ms=round(
                         duration_ms,
@@ -55,5 +93,5 @@ async def metrics_middleware(
 
             print(
                 "[metrics] "
-                f"failed to save metric: {exc}"
+                f"database error: {exc}"
             )
