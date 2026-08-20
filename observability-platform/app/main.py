@@ -37,6 +37,10 @@ from app.api.application_metrics_routes import (
     router as application_metrics_router,
 )
 
+from app.api.health_routes import (
+    router as health_router,
+)
+
 from app.api.log_routes import (
     router as log_router,
 )
@@ -57,15 +61,19 @@ from app.core.database import (
     engine,
 )
 
-from logging import (
+from .correlation import (
+    correlation_middleware,
+)
+
+from .logging import (
     request_logging_middleware,
 )
 
-from metrics import (
+from .metrics import (
     metrics_middleware,
 )
 
-from tracing import (
+from .tracing import (
     tracing_middleware,
 )
 
@@ -85,6 +93,10 @@ from app.observability.logging import (
     configure_logging,
 )
 
+from app.observability.retention import (
+    cleanup_old_data,
+)
+
 from app.observability.tracing import (
     setup_tracing,
 )
@@ -101,6 +113,8 @@ setup_tracing()
 
 async def observability_loop():
 
+    counter = 0
+
     while True:
 
         try:
@@ -112,6 +126,16 @@ async def observability_loop():
                 save_snapshot(
                     db
                 )
+
+            counter += 1
+
+            if counter >= 288:
+
+                cleanup_old_data(
+                    retention_days=30
+                )
+
+                counter = 0
 
         except Exception as exc:
 
@@ -186,38 +210,6 @@ async def lifespan(
 
             db.commit()
 
-        if db.scalar(
-            select(AlertRule).limit(1)
-        ) is None:
-
-            db.add_all(
-                [
-                    AlertRule(
-                        name="High CPU Usage",
-                        metric="cpu_percent",
-                        operator=">=",
-                        threshold=90,
-                        severity="critical",
-                    ),
-                    AlertRule(
-                        name="High Memory Usage",
-                        metric="memory_percent",
-                        operator=">=",
-                        threshold=85,
-                        severity="warning",
-                    ),
-                    AlertRule(
-                        name="Low Disk Capacity",
-                        metric="disk_percent",
-                        operator=">=",
-                        threshold=90,
-                        severity="critical",
-                    ),
-                ]
-            )
-
-            db.commit()
-
     task = asyncio.create_task(
         observability_loop()
     )
@@ -239,13 +231,20 @@ async def lifespan(
 
 app = FastAPI(
     title=settings.app_name,
-    version="6.0.0",
+    version="7.0.0",
     lifespan=lifespan,
 )
 
 
 FastAPIInstrumentor.instrument_app(
     app
+)
+
+
+app.middleware(
+    "http"
+)(
+    correlation_middleware
 )
 
 
@@ -290,6 +289,10 @@ app.include_router(
     trace_router
 )
 
+app.include_router(
+    health_router
+)
+
 
 metrics_app = make_asgi_app()
 
@@ -307,16 +310,6 @@ app.mount(
     ),
     name="static",
 )
-
-
-@app.get("/health")
-def health():
-
-    return {
-        "status": "operational",
-        "service": settings.app_name,
-        "version": "6.0.0",
-    }
 
 
 @app.get("/")
