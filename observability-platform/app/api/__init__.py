@@ -14,10 +14,15 @@ from app.api.routes import (
     router,
 )
 
+from app.api.trace_routes import (
+    router as trace_router,
+)
+
 
 __all__ = [
     "router",
-    "log_router",
     "alert_router",
     "application_metrics_router",
+    "log_router",
+    "trace_router",
 ]
