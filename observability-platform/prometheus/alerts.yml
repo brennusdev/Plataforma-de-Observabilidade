@@ -1,76 +1,111 @@
 groups:
 
-  - name: observability-alerts
+  - name: infrastructure
 
     rules:
 
       - alert: HighCPUUsage
 
-        expr:
-          system_cpu_usage_percent >= 90
+        expr: system_cpu_usage_percent >= 90
 
         for: 2m
 
         labels:
+
           severity: critical
 
         annotations:
 
           summary: "High CPU usage"
 
-          description:
-            "CPU usage has remained above 90% for 2 minutes."
-
 
       - alert: HighMemoryUsage
 
-        expr:
-          system_memory_usage_percent >= 85
+        expr: system_memory_usage_percent >= 85
 
         for: 2m
 
         labels:
+
           severity: warning
 
         annotations:
 
           summary: "High memory usage"
 
-          description:
-            "Memory usage has remained above 85% for 2 minutes."
-
 
       - alert: HighDiskUsage
 
-        expr:
-          system_disk_usage_percent >= 90
+        expr: system_disk_usage_percent >= 90
 
         for: 5m
 
         labels:
+
           severity: critical
 
         annotations:
 
           summary: "High disk usage"
 
-          description:
-            "Disk usage has remained above 90% for 5 minutes."
 
+  - name: application
 
-      - alert: ApplicationDown
+    rules:
 
-        expr:
-          application_up == 0
+      - alert: HighErrorRate
 
-        for: 1m
+        expr: |
+          (
+            sum(rate(http_request_errors_total[5m]))
+            /
+            sum(rate(http_requests_total[5m]))
+          ) > 0.05
+
+        for: 5m
 
         labels:
+
           severity: critical
 
         annotations:
 
-          summary: "Application unavailable"
+          summary: "HTTP error rate above 5%"
 
-          description:
-            "The observability API is unavailable."
+
+      - alert: HighP95Latency
+
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum(
+              rate(
+                http_request_duration_seconds_bucket[5m]
+              )
+            ) by (le)
+          ) > 1
+
+        for: 5m
+
+        labels:
+
+          severity: warning
+
+        annotations:
+
+          summary: "P95 latency above 1 second"
+
+
+      - alert: TooManyActiveRequests
+
+        expr: http_active_requests > 100
+
+        for: 2m
+
+        labels:
+
+          severity: warning
+
+        annotations:
+
+          summary: "High number of active requests"
