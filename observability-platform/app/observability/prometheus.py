@@ -5,10 +5,10 @@ from prometheus_client import Histogram
 
 REQUEST_COUNT = Counter(
     "http_requests_total",
-    "Total number of HTTP requests.",
+    "Total HTTP requests.",
     [
         "method",
-        "path",
+        "route",
         "status_code",
     ],
 )
@@ -16,10 +16,10 @@ REQUEST_COUNT = Counter(
 
 REQUEST_ERRORS = Counter(
     "http_request_errors_total",
-    "Total number of HTTP request errors.",
+    "Total HTTP request errors.",
     [
         "method",
-        "path",
+        "route",
         "status_code",
     ],
 )
@@ -30,7 +30,7 @@ REQUEST_LATENCY = Histogram(
     "HTTP request latency.",
     [
         "method",
-        "path",
+        "route",
     ],
     buckets=[
         0.005,
@@ -68,4 +68,30 @@ DISK_USAGE = Gauge(
 APPLICATION_UP = Gauge(
     "application_up",
     "Application availability.",
+)
+
+
+APPLICATION_INFO = Gauge(
+    "application_info",
+    "Application information.",
+    [
+        "service",
+        "version",
+        "environment",
+    ],
+)
+
+
+ACTIVE_REQUESTS = Gauge(
+    "http_active_requests",
+    "Current active HTTP requests.",
+)
+
+
+BUSINESS_EVENTS = Counter(
+    "application_business_events_total",
+    "Total application business events.",
+    [
+        "event",
+    ],
 )
