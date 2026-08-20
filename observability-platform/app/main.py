@@ -21,6 +21,14 @@ from prometheus_client import (
 
 from sqlalchemy import select
 
+from opentelemetry.instrumentation.fastapi import (
+    FastAPIInstrumentor,
+)
+
+from opentelemetry.instrumentation.sqlalchemy import (
+    SQLAlchemyInstrumentor,
+)
+
 from app.api.alert_routes import (
     router as alert_router,
 )
@@ -37,6 +45,10 @@ from app.api.routes import (
     router,
 )
 
+from app.api.trace_routes import (
+    router as trace_router,
+)
+
 from app.core.config import settings
 
 from app.core.database import (
@@ -45,12 +57,16 @@ from app.core.database import (
     engine,
 )
 
-from app.middleware.logging import (
+from logging import (
     request_logging_middleware,
 )
 
-from app.middleware.metrics import (
+from metrics import (
     metrics_middleware,
+)
+
+from tracing import (
+    tracing_middleware,
 )
 
 from app.models.alert import (
@@ -65,9 +81,22 @@ from app.observability.collector import (
     collect_system_metrics,
 )
 
+from app.observability.logging import (
+    configure_logging,
+)
+
+from app.observability.tracing import (
+    setup_tracing,
+)
+
 from app.services.collector_service import (
     save_snapshot,
 )
+
+
+configure_logging()
+
+setup_tracing()
 
 
 async def observability_loop():
@@ -105,6 +134,10 @@ async def lifespan(
         bind=engine
     )
 
+    SQLAlchemyInstrumentor().instrument(
+        engine=engine
+    )
+
     with SessionLocal() as db:
 
         if db.scalar(
@@ -118,27 +151,33 @@ async def lifespan(
                         status="operational",
                         uptime_percent=99.95,
                     ),
-
                     ServiceStatus(
                         service_name="database",
                         status="operational",
                         uptime_percent=99.99,
                     ),
-
                     ServiceStatus(
                         service_name="collector",
                         status="operational",
                         uptime_percent=99.90,
                     ),
-
                     ServiceStatus(
                         service_name="prometheus",
                         status="operational",
                         uptime_percent=99.99,
                     ),
-
                     ServiceStatus(
                         service_name="grafana",
+                        status="operational",
+                        uptime_percent=99.99,
+                    ),
+                    ServiceStatus(
+                        service_name="otel-collector",
+                        status="operational",
+                        uptime_percent=99.99,
+                    ),
+                    ServiceStatus(
+                        service_name="jaeger",
                         status="operational",
                         uptime_percent=99.99,
                     ),
@@ -160,7 +199,6 @@ async def lifespan(
                         threshold=90,
                         severity="critical",
                     ),
-
                     AlertRule(
                         name="High Memory Usage",
                         metric="memory_percent",
@@ -168,7 +206,6 @@ async def lifespan(
                         threshold=85,
                         severity="warning",
                     ),
-
                     AlertRule(
                         name="Low Disk Capacity",
                         metric="disk_percent",
@@ -202,8 +239,20 @@ async def lifespan(
 
 app = FastAPI(
     title=settings.app_name,
-    version="5.0.0",
+    version="6.0.0",
     lifespan=lifespan,
+)
+
+
+FastAPIInstrumentor.instrument_app(
+    app
+)
+
+
+app.middleware(
+    "http"
+)(
+    tracing_middleware
 )
 
 
@@ -237,6 +286,10 @@ app.include_router(
     application_metrics_router
 )
 
+app.include_router(
+    trace_router
+)
+
 
 metrics_app = make_asgi_app()
 
@@ -262,7 +315,7 @@ def health():
     return {
         "status": "operational",
         "service": settings.app_name,
-        "version": "5.0.0",
+        "version": "6.0.0",
     }
 
 
