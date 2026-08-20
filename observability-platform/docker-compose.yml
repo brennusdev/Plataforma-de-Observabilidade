@@ -14,11 +14,15 @@ services:
 
       DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/observability
 
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+
+      OTEL_SERVICE_NAME: observability-api
+
     depends_on:
 
       - db
-
       - prometheus
+      - otel-collector
 
 
   db:
@@ -78,21 +82,63 @@ services:
     depends_on:
 
       - prometheus
+      - jaeger
 
     volumes:
 
       - grafana_data:/var/lib/grafana
 
+      - ./grafana/provisioning:/etc/grafana/provisioning
+
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+
+
+  otel-collector:
+
+    image: otel/opentelemetry-collector-contrib:latest
+
+    container_name: observability-otel
+
+    command:
+
+      - "--config=/etc/otelcol-contrib/config.yaml"
+
+    volumes:
+
+      - ./otel-collector-config.yml:/etc/otelcol-contrib/config.yaml
+
+    ports:
+
+      - "4317:4317"
+
+      - "4318:4318"
+
+    depends_on:
+
+      - jaeger
+
+
+  jaeger:
+
+    image: jaegertracing/all-in-one:latest
+
+    container_name: observability-jaeger
+
+    ports:
+
+      - "16686:16686"
+
+      - "4317:4317"
+
+      - "4318:4318"
+
+    environment:
+
+      COLLECTOR_OTLP_ENABLED: "true"
+
 
 volumes:
-
 
   postgres_data:
 
   grafana_data:
-
-   - grafana_data:/var/lib/grafana
-
-   - ./grafana/provisioning:/etc/grafana/provisioning
-
-    - ./grafana/dashboards:/var/lib/grafana/dashboards
