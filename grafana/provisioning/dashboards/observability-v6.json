@@ -1,5 +1,5 @@
 {
-  "title": "Observability Platform",
+  "title": "Observability Platform V6",
   "timezone": "browser",
   "schemaVersion": 39,
   "version": 1,
@@ -38,7 +38,7 @@
       ]
     },
     {
-      "title": "Disk Usage",
+      "title": "HTTP Requests",
       "type": "timeseries",
       "gridPos": {
         "x": 0,
@@ -48,13 +48,13 @@
       },
       "targets": [
         {
-          "expr": "system_disk_usage_percent",
-          "legendFormat": "Disk %"
+          "expr": "rate(http_requests_total[5m])",
+          "legendFormat": "{{method}} {{path}}"
         }
       ]
     },
     {
-      "title": "HTTP Requests",
+      "title": "HTTP Errors",
       "type": "timeseries",
       "gridPos": {
         "x": 12,
@@ -64,23 +64,7 @@
       },
       "targets": [
         {
-          "expr": "rate(http_requests_total[1m])",
-          "legendFormat": "{{method}} {{path}}"
-        }
-      ]
-    },
-    {
-      "title": "HTTP Error Rate",
-      "type": "timeseries",
-      "gridPos": {
-        "x": 0,
-        "y": 16,
-        "w": 12,
-        "h": 8
-      },
-      "targets": [
-        {
-          "expr": "rate(http_request_errors_total[1m])",
+          "expr": "rate(http_request_errors_total[5m])",
           "legendFormat": "{{status_code}}"
         }
       ]
@@ -89,7 +73,7 @@
       "title": "P95 Latency",
       "type": "timeseries",
       "gridPos": {
-        "x": 12,
+        "x": 0,
         "y": 16,
         "w": 12,
         "h": 8
@@ -98,6 +82,21 @@
         {
           "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) * 1000",
           "legendFormat": "P95 ms"
+        }
+      ]
+    },
+    {
+      "title": "Application Status",
+      "type": "stat",
+      "gridPos": {
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "application_up"
         }
       ]
     }
