@@ -20,9 +20,30 @@ services:
 
     depends_on:
 
-      - db
-      - prometheus
-      - otel-collector
+      db:
+        condition: service_healthy
+
+      prometheus:
+        condition: service_started
+
+      otel-collector:
+        condition: service_started
+
+    healthcheck:
+
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live')"
+        ]
+
+      interval: 10s
+
+      timeout: 5s
+
+      retries: 5
 
 
   db:
@@ -47,6 +68,20 @@ services:
 
       - postgres_data:/var/lib/postgresql/data
 
+    healthcheck:
+
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U postgres -d observability"
+        ]
+
+      interval: 5s
+
+      timeout: 5s
+
+      retries: 5
+
 
   prometheus:
 
@@ -64,10 +99,6 @@ services:
 
       - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml
 
-    command:
-
-      - "--config.file=/etc/prometheus/prometheus.yml"
-
 
   grafana:
 
@@ -82,6 +113,7 @@ services:
     depends_on:
 
       - prometheus
+
       - jaeger
 
     volumes:
