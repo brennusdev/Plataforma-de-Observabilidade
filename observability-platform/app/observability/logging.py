@@ -2,6 +2,10 @@ import logging
 
 from opentelemetry import trace
 
+from app.observability.correlation import (
+    get_correlation_id,
+)
+
 
 class OpenTelemetryFormatter(
     logging.Formatter
@@ -36,10 +40,16 @@ class OpenTelemetryFormatter(
 
             span_id = "0"
 
+        correlation_id = (
+            get_correlation_id()
+        )
+
         return (
+            f"timestamp={self.formatTime(record)} "
+            f"level={record.levelname} "
             f"trace_id={trace_id} "
             f"span_id={span_id} "
-            f"level={record.levelname} "
+            f"correlation_id={correlation_id} "
             f"message={record.getMessage()}"
         )
 
