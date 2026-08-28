@@ -26,6 +26,10 @@ from app.models.reliability import (
     ReliabilitySnapshot,
 )
 
+from app.models.incident import (
+    IncidentRecord,
+)
+
 
 __all__ = [
     "Alert",
