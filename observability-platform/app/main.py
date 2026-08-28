@@ -45,6 +45,10 @@ from app.api.log_routes import (
     router as log_router,
 )
 
+from app.api.resilience_routes import (
+    router as resilience_router,
+)
+
 from app.api.routes import (
     router,
 )
@@ -61,19 +65,27 @@ from app.core.database import (
     engine,
 )
 
-from .correlation import (
+from middleware.correlation import (
     correlation_middleware,
 )
 
-from .logging import (
+from middleware.idempotency import (
+    idempotency_middleware,
+)
+
+from middleware.logging import (
     request_logging_middleware,
 )
 
-from .metrics import (
+from middleware.metrics import (
     metrics_middleware,
 )
 
-from .tracing import (
+from middleware.rate_limit import (
+    rate_limit_middleware,
+)
+
+from middleware.tracing import (
     tracing_middleware,
 )
 
@@ -231,7 +243,7 @@ async def lifespan(
 
 app = FastAPI(
     title=settings.app_name,
-    version="7.0.0",
+    version="8.0.0",
     lifespan=lifespan,
 )
 
@@ -245,6 +257,20 @@ app.middleware(
     "http"
 )(
     correlation_middleware
+)
+
+
+app.middleware(
+    "http"
+)(
+    idempotency_middleware
+)
+
+
+app.middleware(
+    "http"
+)(
+    rate_limit_middleware
 )
 
 
@@ -291,6 +317,10 @@ app.include_router(
 
 app.include_router(
     health_router
+)
+
+app.include_router(
+    resilience_router
 )
 
 
