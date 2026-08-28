@@ -64,6 +64,9 @@ from app.core.database import (
     SessionLocal,
     engine,
 )
+from app.api.reliability_routes import (
+    router as reliability_router,
+)
 
 from middleware.correlation import (
     correlation_middleware,
@@ -288,6 +291,10 @@ app.middleware(
     "http"
 )(
     request_logging_middleware
+)
+
+app.include_router(
+    reliability_router
 )
 
 
