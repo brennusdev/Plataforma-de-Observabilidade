@@ -16,6 +16,9 @@ from app.models.metric import (
     MetricSnapshot,
     ServiceStatus,
 )
+from app.models.chaos import (
+    ChaosExperiment,
+)
 
 
 __all__ = [
