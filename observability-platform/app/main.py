@@ -116,6 +116,9 @@ from app.observability.tracing import (
 from app.services.collector_service import (
     save_snapshot,
 )
+from app.api.chaos_routes import (
+    router as chaos_router,
+)
 
 
 configure_logging()
@@ -292,6 +295,10 @@ app.middleware(
     "http"
 )(
     metrics_middleware
+)
+
+app.include_router(
+    chaos_router
 )
 
 
