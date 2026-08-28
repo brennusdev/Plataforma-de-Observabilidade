@@ -16,8 +16,14 @@ from app.models.metric import (
     MetricSnapshot,
     ServiceStatus,
 )
+
 from app.models.chaos import (
     ChaosExperiment,
+)
+
+from app.models.reliability import (
+    SLORecord,
+    ReliabilitySnapshot,
 )
 
 
