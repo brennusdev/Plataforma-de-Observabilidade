@@ -119,8 +119,13 @@ from app.observability.tracing import (
 from app.services.collector_service import (
     save_snapshot,
 )
+
 from app.api.chaos_routes import (
     router as chaos_router,
+)
+
+from app.api.incident_routes import (
+    router as incident_router,
 )
 
 
@@ -319,6 +324,10 @@ app.include_router(
 
 app.include_router(
     alert_router
+)
+
+app.include_router(
+    incident_router
 )
 
 app.include_router(
