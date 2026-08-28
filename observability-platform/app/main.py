@@ -128,6 +128,10 @@ from app.api.incident_routes import (
     router as incident_router,
 )
 
+from app.api.dependency_routes import (
+    router as dependency_router,
+)
+
 
 configure_logging()
 
@@ -344,6 +348,10 @@ app.include_router(
 
 app.include_router(
     resilience_router
+)
+
+app.include_router(
+    dependency_router
 )
 
 
