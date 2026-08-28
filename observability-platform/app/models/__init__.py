@@ -30,6 +30,11 @@ from app.models.incident import (
     IncidentRecord,
 )
 
+from app.models.dependency import (
+    ServiceRecord,
+    DependencyRecord,
+)
+
 
 __all__ = [
     "Alert",
