@@ -6,8 +6,16 @@ from app.api.application_metrics_routes import (
     router as application_metrics_router,
 )
 
+from app.api.health_routes import (
+    router as health_router,
+)
+
 from app.api.log_routes import (
     router as log_router,
+)
+
+from app.api.resilience_routes import (
+    router as resilience_router,
 )
 
 from app.api.routes import (
@@ -23,6 +31,8 @@ __all__ = [
     "router",
     "alert_router",
     "application_metrics_router",
+    "health_router",
     "log_router",
+    "resilience_router",
     "trace_router",
 ]
