@@ -35,6 +35,10 @@ from app.models.dependency import (
     DependencyRecord,
 )
 
+from app.models.profiling import (
+    ProfilingSnapshotRecord,
+)
+
 
 __all__ = [
     "Alert",
