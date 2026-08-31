@@ -132,6 +132,10 @@ from app.api.dependency_routes import (
     router as dependency_router,
 )
 
+from app.api.profiling_routes import (
+    router as profiling_router,
+)
+
 
 configure_logging()
 
@@ -352,6 +356,10 @@ app.include_router(
 
 app.include_router(
     dependency_router
+)
+
+app.include_router(
+    profiling_router
 )
 
 
